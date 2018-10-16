@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Get the directory of mozilla-build in the 3 environments we're working with.
+WSL_MB='/mnt/c/mozilla-build'
+MSYS_MB='/c/mozilla-build'
+W32_MB='C:\mozilla-build\'
+
+__ARGS=
+if [ $# != 0 ]; then
+    __ARGS="-c '$@'"
+fi
+
+# Convert our path to a MSYS path by resolving symlinks & stripping `/mnt/`.
+MSYS_PWD=$(readlink -f . | sed -e 's/^\/mnt\//\//g')
+
+# Start a mingw ptty, set the `MOZILLABUILD` environment variable in it, start
+# a login bash session, change to the correct directory, and execute bash.
+"$WSL_MB/msys/bin/console.exe" env MOZILLABUILD="$W32_MB" \
+    "$MSYS_MB/msys/bin/bash.exe" -l -c "cd $MSYS_PWD && exec bash $__ARGS"
+
